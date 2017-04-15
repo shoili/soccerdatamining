@@ -31,10 +31,15 @@ soccer <- subset(soccer, select=-c(id, date, home_team_goal,
                                    team_short_name1_away_away,Country_Name_home,League_name,id5,date1_home,
                                    id6_away,date2_away))
 
+# factorize columns
+names<-c("country_id", "season", "")
+
 # remove rows with NA
 soccer_nona <- na.omit(soccer)
 
 write.csv(soccer, 'soccer_4_14.csv', row.names=FALSE)
+write.csv(soccer_nona, 'soccer_nona.csv', row.names=FALSE)
+
 
 # multinomial regression: 1 if home wins, 2 if home loses, 3 if tie
 soccer$outcome <- ifelse(soccer$home_team_goal-soccer$away_team_goal > 0, 1, 
