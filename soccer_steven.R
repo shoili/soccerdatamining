@@ -23,8 +23,14 @@ soccer <- subset(soccer, select=-c(country_id1, league_id, team_api_id,
                                    id3_home, id4, team_fifa_api_id2_home,
                                    team_api_id2_home, team_fifa_api_id3_away,
                                    team_api_id3_away))
+
+# multinomial regression: 1 if home wins, 2 if home loses, 3 if tie
+soccer$outcome <- ifelse(soccer$home_team_goal-soccer$away_team_goal > 0, 1, 
+                         ifelse(soccer$home_team_goal-soccer$away_team_goal<0, 2, 3))
+soccer$outcome <- as.factor(soccer$outcome)
+
 # remove useless columns
-soccer <- subset(soccer, select=-c(id, date, home_team_goal, 
+soccer <- subset(soccer, select=-c(id, date, match_api_id, home_team_goal, 
                                    away_team_goal, Goal_Diff_Home, 
                                    Goal_Diff_away, id1_home_home, team_fifa_api_id_home_home,
                                    team_long_name_home_home, team_short_name_home_home,
@@ -32,27 +38,29 @@ soccer <- subset(soccer, select=-c(id, date, home_team_goal,
                                    team_short_name1_away_away,Country_Name_home,League_name,id5,date1_home,
                                    id6_away,date2_away))
 
+# remove columns with too many factors (messes up classification)
+soccer <- subset(soccer, select=-c(home_team_api_id, away_team_api_id))
+
 # factorize columns
-names<-c("country_id", "season", "stage", "match_api_id", "home_team_api_id", 
-         "away_team_api_id")
+names<-c("country_id", "season", "stage")
 soccer[,names] <- lapply(soccer[,names], factor)
 
-# remove rows with NA
-soccer_nona <- na.omit(soccer)
+# dataset with betting data removed
+library(dplyr)
+nan_columns = colnames(soccer)[colSums(is.na(soccer)) > 0]
+soccer_nobet <- soccer[, !colnames(soccer) %in% nan_columns]
+write.csv(soccer_nobet, 'soccer_nobet.csv', row.names=FALSE)
 
-write.csv(soccer, 'soccer_clean.csv', row.names=FALSE)
+# dataset with NA rows removed
+soccer_nona <- na.omit(soccer)
 write.csv(soccer_nona, 'soccer_nona.csv', row.names=FALSE)
 
+write.csv(soccer, 'soccer_clean.csv', row.names=FALSE)
 
-# multinomial regression: 1 if home wins, 2 if home loses, 3 if tie
-soccer$outcome <- ifelse(soccer$home_team_goal-soccer$away_team_goal > 0, 1, 
-                         ifelse(soccer$home_team_goal-soccer$away_team_goal<0, 2, 3))
-soccer$outcome <- as.factor(soccer$outcome)
 
 
 library(nnet)
-test <- multinom(outcome ~ country_id+season+stage+match_api_id+home_team_api_id+
-                   away_team_api_id+Goal_Diff_Home_10.Games+Goal_Diff_away_10.Games+
+test <- multinom(outcome ~ country_id+season+stage+Goal_Diff_Home_10.Games+Goal_Diff_away_10.Games+
                    B365H+B365D+B365A+BWH+BWD+BWA+IWH+IWD+IWA+LBH+LBD+LBA+PSH+PSD+PSA+
                    WHH+WHD+WHA+SJH+SJD+SJA+VCH+VCD+VCA+GBH+GBD+GBA+BSH+BSD+BSA+
                    buildUpPlaySpeed_home+buildUpPlaySpeedClass_home+
@@ -82,8 +90,7 @@ for (b in 1:B){
   flag <- sort(sample(1:n, n1));
   train <- soccer_nona[-flag,];
   test  <- soccer_nona[flag,];
-  model <- multinom(outcome ~ country_id+season+stage+match_api_id+home_team_api_id+
-                     away_team_api_id+Goal_Diff_Home_10.Games+Goal_Diff_away_10.Games+
+  model <- multinom(outcome ~ country_id+season+stage+Goal_Diff_Home_10.Games+Goal_Diff_away_10.Games+
                      B365H+B365D+B365A+BWH+BWD+BWA+IWH+IWD+IWA+LBH+LBD+LBA+PSH+PSD+PSA+
                      WHH+WHD+WHA+SJH+SJD+SJA+VCH+VCD+VCA+GBH+GBD+GBA+BSH+BSD+BSA+
                      buildUpPlaySpeed_home+buildUpPlaySpeedClass_home+
