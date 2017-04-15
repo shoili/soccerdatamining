@@ -1,4 +1,5 @@
-setwd('Downloads')
+setwd('/Users/Stevenstuff/Downloads')
+#setwd("/Users/Stevenstuff/soccerdatamining")
 soccer <- read.csv('Soccerdata.csv')
 
 # fill in blanks with NA's
@@ -32,12 +33,14 @@ soccer <- subset(soccer, select=-c(id, date, home_team_goal,
                                    id6_away,date2_away))
 
 # factorize columns
-names<-c("country_id", "season", "")
+names<-c("country_id", "season", "stage", "match_api_id", "home_team_api_id", 
+         "away_team_api_id")
+soccer[,names] <- lapply(soccer[,names], factor)
 
 # remove rows with NA
 soccer_nona <- na.omit(soccer)
 
-write.csv(soccer, 'soccer_4_14.csv', row.names=FALSE)
+write.csv(soccer, 'soccer_clean.csv', row.names=FALSE)
 write.csv(soccer_nona, 'soccer_nona.csv', row.names=FALSE)
 
 
