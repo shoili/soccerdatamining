@@ -1,0 +1,358 @@
+--
+-- Create a table like the Match table, but having
+-- calculated information about wins, losses,
+-- and goal differential at various time horizons.
+--
+CREATE TABLE Match_Goal_Differential (
+  league_id        INTEGER,
+  season           TEXT,
+  stage            INTEGER,
+  timeline_id      INTEGER,
+  match_api_id     INTEGER,
+  home_team_api_id	INTEGER,
+  home_team_short_name  TEXT,
+  away_team_api_id	INTEGER,
+  away_team_short_name  TEXT,
+  home_team_goal	INTEGER,
+  away_team_goal	INTEGER,
+  home_win         INTEGER,
+  home_loss        INTEGER,
+  home_draw        INTEGER,
+  away_win         INTEGER,
+  away_loss        INTEGER,
+  away_draw        INTEGER,
+  home_goal_diff_0  INTEGER,
+  away_goal_diff_0  INTEGER,
+  home_goal_diff_1  INTEGER,
+  away_goal_diff_1  INTEGER,
+  home_goal_diff_2  INTEGER,
+  away_goal_diff_2  INTEGER,
+  home_goal_diff_3  INTEGER,
+  away_goal_diff_3  INTEGER,
+  home_goal_diff_5  INTEGER,
+  away_goal_diff_5  INTEGER,
+  home_goal_diff_10  INTEGER,
+  away_goal_diff_10  INTEGER,
+  home_goal_diff_total  INTEGER,
+  away_goal_diff_total  INTEGER
+);
+
+.separator ','
+
+--
+-- Check Match table counts for verification
+--
+SELECT league_id,
+       season,
+       count(*) game_cnt
+  FROM Match
+ WHERE league_id = 1729
+ GROUP BY league_id, season
+ ORDER BY league_id, season;
+-- 1729,2008/2009,380
+-- 1729,2009/2010,380
+-- 1729,2010/2011,380
+-- 1729,2011/2012,380
+-- 1729,2012/2013,380
+-- 1729,2013/2014,380
+-- 1729,2014/2015,380
+-- 1729,2015/2016,380
+
+--
+-- Create our data.
+--
+INSERT INTO Match_Goal_Differential
+            (league_id,
+             season,
+             stage,
+             timeline_id,
+             match_api_id,
+             home_team_api_id,
+             home_team_short_name,
+             away_team_api_id,
+             away_team_short_name,
+             home_team_goal,
+             away_team_goal,
+             home_win,
+             home_loss,
+             home_draw,
+             away_win,
+             away_loss,
+             away_draw,
+             home_goal_diff_0,
+             away_goal_diff_0,
+             home_goal_diff_1,
+             away_goal_diff_1,
+             home_goal_diff_2,
+             away_goal_diff_2,
+             home_goal_diff_3,
+             away_goal_diff_3,
+             home_goal_diff_5,
+             away_goal_diff_5,
+             home_goal_diff_10,
+             away_goal_diff_10,
+             home_goal_diff_total,
+             away_goal_diff_total)
+      SELECT m.league_id,
+             m.season,
+             m.stage,
+             tl.id,
+             m.match_api_id,
+             m.home_team_api_id,
+             hm.team_short_name,
+             m.away_team_api_id,
+             aw.team_short_name,
+             m.home_team_goal,
+             m.away_team_goal,
+             CASE WHEN m.home_team_goal > m.away_team_goal THEN 1 ELSE 0 END,
+             CASE WHEN m.home_team_goal < m.away_team_goal THEN 1 ELSE 0 END,
+             CASE WHEN m.home_team_goal = m.away_team_goal THEN 1 ELSE 0 END,
+             CASE WHEN m.away_team_goal > m.home_team_goal THEN 1 ELSE 0 END,
+             CASE WHEN m.away_team_goal < m.home_team_goal THEN 1 ELSE 0 END,
+             CASE WHEN m.away_team_goal = m.home_team_goal THEN 1 ELSE 0 END,
+             m.home_team_goal - m.away_team_goal,
+             m.away_team_goal - m.home_team_goal,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null,
+             null
+        FROM Match          m,
+             Time_Line_EPL  tl,
+             Team           hm,
+             Team           aw
+       WHERE m.league_id  = 1729
+         AND m.season     = tl.season
+         AND m.stage      = tl.stage
+         AND m.home_team_api_id = hm.team_api_id
+         AND m.away_team_api_id = aw.team_api_id;
+
+--
+-- Check high-level counts
+--
+SELECT league_id,
+       season,
+       count(*) game_cnt
+  FROM Match_Goal_Differential
+ WHERE league_id = 1729
+ GROUP BY league_id, season
+ ORDER BY league_id, season;
+-- 1729,2008/2009,380
+-- 1729,2009/2010,380
+-- 1729,2010/2011,380
+-- 1729,2011/2012,380
+-- 1729,2012/2013,380
+-- 1729,2013/2014,380
+-- 1729,2014/2015,380
+-- 1729,2015/2016,380
+
+--
+-- Check the calculations for 1 stage
+--
+SELECT league_id,
+       season,
+       stage,
+       timeline_id,
+       match_api_id,
+       home_team_api_id,
+       home_team_short_name,
+       away_team_api_id,
+       away_team_short_name,
+       home_team_goal,
+       away_team_goal,
+       home_win,
+       home_loss,
+       home_draw,
+       away_win,
+       away_loss,
+       away_draw,
+       home_goal_diff_0,
+       away_goal_diff_0,
+       home_goal_diff_1,
+       away_goal_diff_1,
+       home_goal_diff_2,
+       away_goal_diff_2,
+       home_goal_diff_3,
+       away_goal_diff_3,
+       home_goal_diff_5,
+       away_goal_diff_5,
+       home_goal_diff_10,
+       away_goal_diff_10,
+       home_goal_diff_total,
+       away_goal_diff_total
+  FROM Match_Goal_Differential
+ WHERE league_id = 1729
+   AND timeline_id = 1
+ ORDER BY timeline_id, match_api_id;
+-- 1729,2008/2009,1,1,489042,10260,MUN,10261,NEW,1,1,0,0,1,0,0,1,0,0,,,,,,,,,,,,
+-- 1729,2008/2009,1,1,489043,9825,ARS,8659,WBA,1,0,1,0,0,0,1,0,1,-1,,,,,,,,,,,,
+-- 1729,2008/2009,1,1,489044,8472,SUN,8650,LIV,0,1,0,1,0,1,0,0,-1,1,,,,,,,,,,,,
+-- 1729,2008/2009,1,1,489045,8654,WHU,8528,WIG,2,1,1,0,0,0,1,0,1,-1,,,,,,,,,,,,
+-- 1729,2008/2009,1,1,489046,10252,AVL,8456,MCI,4,2,1,0,0,0,1,0,2,-2,,,,,,,,,,,,
+-- 1729,2008/2009,1,1,489047,8668,EVE,8655,BLB,2,3,0,1,0,1,0,0,-1,1,,,,,,,,,,,,
+-- 1729,2008/2009,1,1,489048,8549,MID,8586,TOT,2,1,1,0,0,0,1,0,1,-1,,,,,,,,,,,,
+-- 1729,2008/2009,1,1,489049,8559,BOL,10194,STK,3,1,1,0,0,0,1,0,2,-2,,,,,,,,,,,,
+-- 1729,2008/2009,1,1,489050,8667,HUL,9879,FUL,2,1,1,0,0,0,1,0,1,-1,,,,,,,,,,,,
+-- 1729,2008/2009,1,1,489051,8455,CHE,8462,POR,4,0,1,0,0,0,1,0,4,-4,,,,,,,,,,,,
+
+--
+-- Output of the new table data
+--
+.headers on
+.mode csv
+.output match_goal_differential.csv
+
+SELECT league_id,
+       season,
+       stage,
+       timeline_id,
+       match_api_id,
+       home_team_api_id,
+       home_team_short_name,
+       away_team_api_id,
+       away_team_short_name,
+       home_team_goal,
+       away_team_goal,
+       home_win,
+       home_loss,
+       home_draw,
+       away_win,
+       away_loss,
+       away_draw,
+       home_goal_diff_0,
+       away_goal_diff_0,
+       home_goal_diff_1,
+       away_goal_diff_1,
+       home_goal_diff_2,
+       away_goal_diff_2,
+       home_goal_diff_3,
+       away_goal_diff_3,
+       home_goal_diff_5,
+       away_goal_diff_5,
+       home_goal_diff_10,
+       away_goal_diff_10,
+       home_goal_diff_total,
+       away_goal_diff_total
+  FROM Match_Goal_Differential
+ WHERE league_id = 1729
+ ORDER BY timeline_id, match_api_id;
+
+--
+-- Close output
+--
+.output stdout
+
+--
+-- Get some high-level stats
+--
+SELECT season,
+       avg(home_goal_diff_0) avg_home_goal_diff,
+       avg(away_goal_diff_0) avg_away_goal_diff
+   FROM Match_Goal_Differential
+  WHERE league_id = 1729
+  GROUP BY season
+  ORDER BY season;
+-- 2008/2009,0.321052631578947,-0.321052631578947
+-- 2009/2010,0.623684210526316,-0.623684210526316
+-- 2010/2011,0.45,-0.45
+-- 2011/2012,0.373684210526316,-0.373684210526316
+-- 2012/2013,0.318421052631579,-0.318421052631579
+-- 2013/2014,0.378947368421053,-0.378947368421053
+-- 2014/2015,0.381578947368421,-0.381578947368421
+-- 2015/2016,0.284210526315789,-0.284210526315789
+
+--
+-- More stats for reference: Home win proportion
+--
+SELECT season,
+       home_win_cnt,
+       game_cnt,
+       CAST(home_win_cnt AS REAL)/CAST(game_cnt AS REAL)   home_win_proportion,
+       CAST(home_draw_cnt AS REAL)/CAST(game_cnt AS REAL)  home_draw_proportion
+  FROM (SELECT season,
+               sum(home_win)           home_win_cnt,
+               sum(home_draw)          home_draw_cnt,
+               count(*)                game_cnt
+          FROM Match_Goal_Differential
+         WHERE league_id = 1729
+         GROUP BY season)
+ ORDER BY season;
+-- 2008/2009,173,380,0.455263157894737,0.255263157894737
+-- 2009/2010,193,380,0.507894736842105,0.252631578947368
+-- 2010/2011,179,380,0.471052631578947,0.292105263157895
+-- 2011/2012,171,380,0.45,0.244736842105263
+-- 2012/2013,166,380,0.436842105263158,0.284210526315789
+-- 2013/2014,179,380,0.471052631578947,0.205263157894737
+-- 2014/2015,172,380,0.452631578947368,0.244736842105263
+-- 2015/2016,157,380,0.413157894736842,0.281578947368421
+
+--
+--  Output of betting odds info
+--
+.mode csv
+.output betting_odds.csv
+
+SELECT m.id,
+       m.country_id,
+       m.league_id,
+       m.season,
+       m.stage,
+       tl.id  AS timeline_id,
+       m.date,
+       m.match_api_id,
+       m.home_team_api_id,
+       m.away_team_api_id,
+       m.home_team_goal,
+       m.away_team_goal,
+       m.B365H, m.B365D, m.B365A,
+       m.BWH,   m.BWD,   m.BWA,
+       m.IWH,   m.IWD,   m.IWA,
+       m.LBH,   m.LBD,   m.LBA,
+       m.PSH,   m.PSD,   m.PSA,
+       m.WHH,   m.WHD,   m.WHA,
+       m.SJH,   m.SJD,   m.SJA,
+       m.VCH,   m.VCD,   m.VCA,
+       m.GBH,   m.GBD,   m.GBA,
+       m.BSH,   m.BSD,   m.BSA
+  FROM Match             m,
+       Time_Line_EPL     tl
+ WHERE m.league_id   =   1729
+   AND m.season      =   tl.season
+   AND m.stage       =   tl.stage
+ ORDER BY tl.id, m.match_api_id;
+
+.output stdout
+
+--
+-- Confirm that no team plays more than once in any stage.
+--
+SELECT season, stage, team_api_id, count(*) cnt
+  FROM (SELECT season, stage, home_team_api_id  team_api_id
+          FROM Match_Goal_Differential
+         UNION ALL
+        SELECT season, stage, away_team_api_id  team_api_id
+          FROM Match_Goal_Differential)
+ GROUP BY season, stage, team_api_id
+HAVING count(*) > 1;
+-- No rows returned
+
+--
+-- Get all of the teams that participate in an EPL match
+-- over this span of years. Relegation means that the
+-- teams change from year-to-year.
+--
+SELECT DISTINCT
+       hm.team_short_name
+  FROM Match          m,
+       Team           hm
+ WHERE m.league_id  = 1729
+   AND m.home_team_api_id = hm.team_api_id
+ ORDER BY hm.team_short_name;
+-- ARS,AVL,BIR,BLA,BLB,BOL,BOU,BUR,CAR,CHE,CRY,EVE,FUL,HUL,LEI,LIV,MCI,MID,MUN,NEW,NOR,POR,QPR,REA,SOU,STK,SUN,SWA,TOT,WAT,WBA,WHU,WIG,WOL
