@@ -1,17 +1,18 @@
 library(dplyr)
 library(e1071)
 
-soccer_nona <- read.csv("soccer_nona.csv", strip.white = T)
+soccer <- read.csv("soccer_nona.csv", strip.white = T)
+# soccer$home_team_api_id <- as.factor(soccer$home_team_api_id)
+# soccer$away_team_api_id <- as.factor(soccer$away_team_api_id)
 ###    save the TE values for all models in all $B=100$ loops
-###    save the TE values for all models in all $B=100$ loops
+
 B= 100;            ### number of loops
 TEALL = NULL;      ### Final TE values
 n = dim(soccer_nona)[1]
 n1 = round(n/5)
 
-soccer_nona <- soccer_nona[c(0, 5, 6, 7, 8, 79)]
-# x <- soccer_nona[c(0,5,6,7,8)]
-# y <- as.factor(soccer_nona$outcome)
+# soccer_nona <- soccer[c(0, 7, 8, 9:38, 39, 42, 45, 47, 49, 52, 54, 56, 59, 62, 65, 67, 69, 72, 74, 76, 79)]
+soccer_nona <- soccer[c(0, 7, 8, 39, 42, 45, 47, 49, 52, 54, 56, 59, 62, 65, 67, 69, 72, 74, 76, 79)]
 
 flag <- sort(sample(1:n, n1));
 train <- soccer_nona[-flag,];
@@ -21,8 +22,7 @@ xtrain <- train[c(1:4)]
 xtest <- test[c(1:4)]
 ytrain <- as.factor(train$outcome)
 ytest <- as.factor(test$outcome)
-# model <- svm(outcome ~ away_team_api_id+Goal_Diff_Home_10.Games+Goal_Diff_away_10.Games,
-#                   data=train)
 
-model <- svm(model, xtest)
-Testmod <- mean(predict(model, xtest) != ytest)
+## MULTICLASS SVM
+model <- svm(xtrain, ytrain, gamma = 0.1, kernel = 'sigmoid') # radial giving .53
+mean(predict(model, xtest) != ytest)
