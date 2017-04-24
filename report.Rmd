@@ -156,25 +156,27 @@ For Binary Classification
 
 Name    | Mean Error | Error Variance
 ------------- | ------------- 
-Bradley Terry Model | .536428 | 0.0009081612
-Logistic Regression (with Betting data) | 
-Logistic Regression (without Betting data) | 
-SVM (with Betting data) | 
-SVM (without Betting data) |
-Random Forest (without Betting data) | 0.53  | 
-Random Forest (with Betting data) |  0.55
+Bradley Terry Model | .536428 | 9.081612e-04
+Logistic Regression (with Betting data) | 0.6342500 | 7.258291e-04
+Logistic Regression (without Betting data) | 0.6235833 | 8.791171e-04
+SVM (with Betting data) | 0.5041667 | 0
+SVM (without Betting data) | 0.6447500 | 7.765094e-04
+Random Forest (with Betting data) | 
+Random Forest (without Betting data) | 0.5325261  | 4.942625e-05
+
 
 For 3-Class Classification
 
 Name | Testing Error
 ------------- | ------------- 
-Logistic Regression (with Betting data) | 
-Logistic Regression (without Betting data) | 
-SVM (with Betting data) |  
-SVM (without Betting data) | 
-Random Forest (without Betting data) | 0.51 | 
-Random Forest (with Betting data) | 0.53
-Ensemble Method | 0.50
+Multinomial Regression (with Betting data) | 0.5005000 | 9.110261e-04
+Multinomial Regression (without Betting data) | 0.4871667 | 8.608560e-04
+SVM (with Betting data) | 0.5065833 | 5.768778e-04
+SVM (without Betting data) | 0.5046667 | 6.098639e-04
+Random Forest (with Betting data) | 
+Random Forest (without Betting data) | 0.5095616 | 5.750444e-05
+Ensemble Method (with Betting data) | 0.4471786 | 3.456211e-05
+Ensemble Method (without Betting data) | 0.4614107 | 3.144835e-05
 
 ## Discussion
 
