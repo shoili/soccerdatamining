@@ -154,13 +154,13 @@ Random Forest was chosen as one of the models to try as it is known to give good
 
 # Results
 
-The following table contains the mean accuracy and variance for each method when the calculations were run 100 times. SVMs displayed the highest testing accuracy mean for the 2-class with ~64.5%. Random Forests had the highest accuracy for 3-class predictions, with respective accuracies of ~50.9%. We perform a statistical test (the t-test) to examine whether the means are statistically significantly higher than the means of other models.
+The following table contains the mean accuracy and variance for each method when the calculations were run 100 times. The SVM model without betting data displayed the highest testing accuracy mean for the 2-class with ~64.5%. Random Forests with betting data had the highest accuracy for 3-class predictions, with respective accuracies of ~50.9%.
 
 For Binary Classification
 
 Name    | Mean Error | Error Variance
 ------------- | ------------- 
-Bradley Terry Model | .536428 | 9.081612e-04
+Bradley Terry Model | 0.536428 | 9.081612e-04
 Logistic Regression (with Betting data) | 0.6342500 | 7.258291e-04
 Logistic Regression (without Betting data) | 0.6235833 | 8.791171e-04
 SVM (with Betting data) | 0.5041667 | 0
@@ -181,6 +181,38 @@ Random Forest (with Betting data) | 0.5277557 | 5.372419e-05
 Random Forest (without Betting data) | 0.5095616 | 5.750444e-05
 Ensemble Method (with Betting data) | 0.4471786 | 3.456211e-05
 Ensemble Method (without Betting data) | 0.4614107 | 3.144835e-05
+
+### Statistical Tests
+
+We performed a statistical test (the t-test) to examine whether the mean accuracies are statistically significantly higher than the means of other models.
+
+For 2-Class Classification
+Best Model: SVM without Betting Data
+
+Compared Model | T-test P-value
+-------------- | ----------------
+Logistic Regression (with Betting data) | 0.0504 
+Logistic Regression (without Betting data) | 0.001147 
+SVM (with Betting data) | <2.2e-16 
+Random Forest (with Betting data) | <2.2e-16 
+Random Forest (without Betting data) | <2.2e-16
+
+For 3-Class Classification
+Best Model: Random Forest with Betting Data
+
+Compared Model | T-test P-value
+-------------- | ----------------
+Multinomial Regression (with Betting data) | 3.793e-07 
+Multinomial Regression (without Betting data) | 1.148e-12 
+SVM (with Betting data) | 9.504e-07
+SVM (without Betting data) | 4.868e-08
+Random Forest (without Betting data) | <2.2e-16
+Ensemble Method (with Betting data) | <2.2e-16 
+Ensemble Method (without Betting data) | <2.2e-16
+
+For the 2-Class classification problem, the SVM model without the betting data had a statistically significantly better accuracy than the other models at the 5% significance level, except for the Logistic Regression model with betting data (p-value: 0.0504).
+
+For the 3-Class classification problem, the Random Forest model with the betting data performed statistically significantly better than all the other models predicting outcome. All p-values were very small, with the largest p-value amongst the comparisons being 9.504e-07. 
 
 ## Discussion
 
