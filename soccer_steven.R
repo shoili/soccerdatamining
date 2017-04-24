@@ -24,13 +24,14 @@ soccer <- subset(soccer, select=-c(country_id1, league_id, team_api_id,
                                    team_api_id2_home, team_fifa_api_id3_away,
                                    team_api_id3_away))
 
-# multinomial regression: 1 if home wins, 2 if home loses, 3 if tie
+# new variables
 soccer$outcome <- ifelse(soccer$home_team_goal-soccer$away_team_goal > 0, 1, 
                          ifelse(soccer$home_team_goal-soccer$away_team_goal<0, 2, 3))
 soccer$outcome <- as.factor(soccer$outcome)
 soccer$win <- as.factor(ifelse(soccer$home_team_goal-soccer$away_team_goal > 0, 1, 0))
 soccer$lose <- as.factor(ifelse(soccer$home_team_goal-soccer$away_team_goal < 0, 1, 0))
 soccer$tie <- as.factor(ifelse(soccer$home_team_goal-soccer$away_team_goal == 0, 1, 0))
+soccer$goal_diff_diff <- soccer$Goal_Diff_Home_10.Games-soccer$Goal_Diff_away_10.Games
 
 # remove useless columns
 soccer <- subset(soccer, select=-c(id, date, match_api_id, home_team_goal, 
@@ -47,6 +48,12 @@ soccer <- subset(soccer, select=-c(home_team_api_id, away_team_api_id))
 # factorize columns
 names<-c("country_id", "season", "stage")
 soccer[,names] <- lapply(soccer[,names], factor)
+
+# EPL dataset
+soccer_epl = subset(soccer,country_id==1729)
+nan_columns = colnames(soccer_epl)[colSums(is.na(soccer_epl)) > 0]
+soccer_epl_nonan <- soccer_epl[, !colnames(soccer_epl) %in% nan_columns]
+soccer_epl_nobet <- subset(soccer_epl_nonan, select=-c(B365H,B365D,B365A,WHH,WHD,WHA,VCH,VCD,VCA))
 
 # dataset with betting data removed
 library(dplyr)
@@ -95,21 +102,25 @@ model <- multinom(outcome ~ country_id+season+stage+Goal_Diff_Home_10.Games+Goal
           chanceCreationCrossing1_away+chanceCreationCrossingClass1_away+chanceCreationShooting1_away+
           chanceCreationShootingClass1_away+chanceCreationPositioningClass1_away+defencePressure1_away+
           defencePressureClass1_away+defenceAggression1_away+defenceAggressionClass1_away+
-          defenceTeamWidth1_away+defenceTeamWidthClass1_away+defenceDefenderLineClass1_away, data=soccer_nobet)
+          defenceTeamWidth1_away+defenceTeamWidthClass1_away+defenceDefenderLineClass1_away, data=train)
 
+Testmulti <- mean(predict(model, test[,1:45]) == test$outcome)
 
 ###    save the TE values for all models in all $B=100$ loops
-B= 100;            ### number of loops
+B= 50;            ### number of loops
 TEALL = NULL;      ### Final TE values
-n = dim(soccer_nobet)[1]
+n = dim(soccer_epl_nonan)[1]
 n1 = round(n/10)
+
+## everything
 
 for (b in 1:B){
   ### randomly select 25 observations as testing data in each loop
   flag <- sort(sample(1:n, n1));
-  train <- soccer_nobet[-flag,];
-  test  <- soccer_nobet[flag,];
-  wins <- glm(win ~ country_id+season+stage+Goal_Diff_Home_10.Games+Goal_Diff_away_10.Games+
+  train <- soccer_epl_nonan[-flag,];
+  test  <- soccer_epl_nonan[flag,];
+  logit_model <- multinom(win ~ country_id+season+stage+Goal_Diff_Home_10.Games+Goal_Diff_away_10.Games+
+                     B365H+B365D+B365A+WHH+WHD+WHA+VCH+VCD+VCA+
                      buildUpPlaySpeed_home+buildUpPlaySpeedClass_home+
                      buildUpPlayDribblingClass_home+buildUpPlayPassing_home+buildUpPlayPassingClass_home+
                      buildUpPlayPositioningClass_home+chanceCreationPassing_home+chanceCreationPassingClass_home+
@@ -123,53 +134,41 @@ for (b in 1:B){
                      chanceCreationCrossing1_away+chanceCreationCrossingClass1_away+chanceCreationShooting1_away+
                      chanceCreationShootingClass1_away+chanceCreationPositioningClass1_away+defencePressure1_away+
                      defencePressureClass1_away+defenceAggression1_away+defenceAggressionClass1_away+
-                     defenceTeamWidth1_away+defenceTeamWidthClass1_away+defenceDefenderLineClass1_away, data=soccer_nobet,
-              family = binomial(link="logit"))
-  loss <- glm(lose ~ country_id+season+stage+Goal_Diff_Home_10.Games+Goal_Diff_away_10.Games+
-                buildUpPlaySpeed_home+buildUpPlaySpeedClass_home+
-                buildUpPlayDribblingClass_home+buildUpPlayPassing_home+buildUpPlayPassingClass_home+
-                buildUpPlayPositioningClass_home+chanceCreationPassing_home+chanceCreationPassingClass_home+
-                chanceCreationCrossing_home+chanceCreationCrossingClass_home+chanceCreationShooting_home+
-                chanceCreationShootingClass_home+chanceCreationPositioningClass_home+defencePressure_home+
-                defencePressureClass_home+defenceAggression_home+defenceAggressionClass_home+
-                defenceTeamWidth_home+defenceTeamWidthClass_home+defenceDefenderLineClass_home+
-                buildUpPlaySpeed1_away+buildUpPlaySpeedClass1_away+
-                buildUpPlayDribblingClass1_away+buildUpPlayPassing1_away+buildUpPlayPassingClass1_away+
-                buildUpPlayPositioningClass1_away+chanceCreationPassing1_away+chanceCreationPassingClass1_away+
-                chanceCreationCrossing1_away+chanceCreationCrossingClass1_away+chanceCreationShooting1_away+
-                chanceCreationShootingClass1_away+chanceCreationPositioningClass1_away+defencePressure1_away+
-                defencePressureClass1_away+defenceAggression1_away+defenceAggressionClass1_away+
-                defenceTeamWidth1_away+defenceTeamWidthClass1_away+defenceDefenderLineClass1_away, data=soccer_nobet,
-              family = binomial(link="logit"))
-  tie <- glm(tie ~ country_id+season+stage+Goal_Diff_Home_10.Games+Goal_Diff_away_10.Games+
-                buildUpPlaySpeed_home+buildUpPlaySpeedClass_home+
-                buildUpPlayDribblingClass_home+buildUpPlayPassing_home+buildUpPlayPassingClass_home+
-                buildUpPlayPositioningClass_home+chanceCreationPassing_home+chanceCreationPassingClass_home+
-                chanceCreationCrossing_home+chanceCreationCrossingClass_home+chanceCreationShooting_home+
-                chanceCreationShootingClass_home+chanceCreationPositioningClass_home+defencePressure_home+
-                defencePressureClass_home+defenceAggression_home+defenceAggressionClass_home+
-                defenceTeamWidth_home+defenceTeamWidthClass_home+defenceDefenderLineClass_home+
-                buildUpPlaySpeed1_away+buildUpPlaySpeedClass1_away+
-                buildUpPlayDribblingClass1_away+buildUpPlayPassing1_away+buildUpPlayPassingClass1_away+
-                buildUpPlayPositioningClass1_away+chanceCreationPassing1_away+chanceCreationPassingClass1_away+
-                chanceCreationCrossing1_away+chanceCreationCrossingClass1_away+chanceCreationShooting1_away+
-                chanceCreationShootingClass1_away+chanceCreationPositioningClass1_away+defencePressure1_away+
-                defencePressureClass1_away+defenceAggression1_away+defenceAggressionClass1_away+
-                defenceTeamWidth1_away+defenceTeamWidthClass1_away+defenceDefenderLineClass1_away, data=soccer_nobet,
-              family = binomial(link="logit"))
-  #Testmod <- mean(predict(model,test[,1:8]) != test$outcome)
-  predict_wins <- predict(wins,test[,1:45], type="response")
+                     defenceTeamWidth1_away+defenceTeamWidthClass1_away+defenceDefenderLineClass1_away, data=train)
+  multi_model <- multinom(outcome ~ country_id+season+stage+Goal_Diff_Home_10.Games+Goal_Diff_away_10.Games+
+                      B365H+B365D+B365A+WHH+WHD+WHA+VCH+VCD+VCA+
+                      buildUpPlaySpeed_home+buildUpPlaySpeedClass_home+
+                      buildUpPlayDribblingClass_home+buildUpPlayPassing_home+buildUpPlayPassingClass_home+
+                      buildUpPlayPositioningClass_home+chanceCreationPassing_home+chanceCreationPassingClass_home+
+                      chanceCreationCrossing_home+chanceCreationCrossingClass_home+chanceCreationShooting_home+
+                      chanceCreationShootingClass_home+chanceCreationPositioningClass_home+defencePressure_home+
+                      defencePressureClass_home+defenceAggression_home+defenceAggressionClass_home+
+                      defenceTeamWidth_home+defenceTeamWidthClass_home+defenceDefenderLineClass_home+
+                      buildUpPlaySpeed1_away+buildUpPlaySpeedClass1_away+
+                      buildUpPlayDribblingClass1_away+buildUpPlayPassing1_away+buildUpPlayPassingClass1_away+
+                      buildUpPlayPositioningClass1_away+chanceCreationPassing1_away+chanceCreationPassingClass1_away+
+                      chanceCreationCrossing1_away+chanceCreationCrossingClass1_away+chanceCreationShooting1_away+
+                      chanceCreationShootingClass1_away+chanceCreationPositioningClass1_away+defencePressure1_away+
+                      defencePressureClass1_away+defenceAggression1_away+defenceAggressionClass1_away+
+                      defenceTeamWidth1_away+defenceTeamWidthClass1_away+defenceDefenderLineClass1_away, data=train)
+  xtrain <- train[c(4:15,18,21,23,25,28,30,32,35,38,41,43,45,48,50,52,59)]
+  xtest <- test[c(4:15,18,21,23,25,28,30,32,35,38,41,43,45,48,50,52,59)]
+  ytrain <- as.factor(train$win)
+  ytest <- as.factor(test$win)
+  svm_model_win <- svm(xtrain, ytrain, gamma = 0.1, kernel = 'radial') 
+  ytrain2 <- as.factor(train$outcome)
+  ytest2 <- as.factor(test$outcome)
+  svm_model_outcome <- svm(xtrain, ytrain2, gamma = 0.1, kernel = 'radial') 
+  
+  Test_svm_win <- mean(predict(svm_model_win, xtest) == ytest)
+  Test_svm_outcome <- mean(predict(svm_model_outcome, xtest) == ytest2)
+  
+  Testmulti <- mean(predict(multi_model, test[,1:54]) == test$outcome)
+  predict_wins <- predict(logit_model,test[,1:54], type="probs")
+  win_thresh <- quantile(predict_wins, perc)
   predict_wins <- ifelse(predict_wins > win_thresh,1,0)
-  Testwins <- mean(predict_wins == test$outcome)
-  # losses
-  predict_losses <- predict(loss,test[,1:45], type="response")
-  predict_losses <- ifelse(predict_losses > loss_thresh,1,0)
-  Testlosses_bench <- mean(predict_losses == test$outcome)
-  # ties
-  predict_ties <- predict(tie,test[,1:45], type="response")
-  predict_ties <- ifelse(predict_ties > tie_thresh,1,0)
-  Test_tie <- mean(predict_ties == test$outcome)
-  TEALL = rbind(TEALL, cbind(Testmod))
+  Testwins <- mean(predict_wins == test$win)
+  TEALL = rbind(TEALL, cbind(Test_svm, Test_svm_outcome, Testmulti, Testwins))
 }
 # decision boundary for wins
 summary(soccer_nobet$win)
@@ -185,3 +184,5 @@ loss_thresh <- quantile(predict(loss,test[,1:45], type="response"), perc)
 summary(soccer_nobet$tie)
 perc = 4905/(4905+14445) #~0.253
 tie_thresh <- quantile(predict(tie,test[,1:45], type="response"), perc)
+
+### df of home team api id, win, predicted win
