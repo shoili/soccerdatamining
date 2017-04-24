@@ -9,7 +9,7 @@ output: pdf_document
 
 Parit Burintrathikul - 48129 - paritb@gatech.edu
 
-Spencer Collins
+Spencer Collins - 92822 - scollins46@gatech.edu
 
 Johnny Humphrey - 15569 - johnny.humphrey@gatech.edu
 
@@ -154,15 +154,15 @@ Random Forest was chosen as one of the models to try as it is known to give good
 
 For Binary Classification
 
-Name    | Testing Error 
+Name    | Mean Error | Error Variance
 ------------- | ------------- 
-Bradley Terry Model |  
+Bradley Terry Model | .536428 | 0.0009081612
 Logistic Regression (with Betting data) | 
 Logistic Regression (without Betting data) | 
 SVM (with Betting data) | 
 SVM (without Betting data) |
 Random Forest (without Betting data) | 0.53  | 
-Random Forest (with Betting data) |  
+Random Forest (with Betting data) |  0.55
 
 For 3-Class Classification
 
@@ -173,8 +173,8 @@ Logistic Regression (without Betting data) |
 SVM (with Betting data) |  
 SVM (without Betting data) | 
 Random Forest (without Betting data) | 0.51 | 
-Random Forest (with Betting data) |  
-Ensemble Method | 
+Random Forest (with Betting data) | 0.53
+Ensemble Method | 0.50
 
 ## Discussion
 
