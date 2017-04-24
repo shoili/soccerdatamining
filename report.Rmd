@@ -144,6 +144,8 @@ Support Vector Machines was chosen as a model for predicting both the two-class 
 
 ### Bradley Terry Model
 
+Bradley Terry has been used to estimate sports outcome because of it’s ability to consider both teams attributes and records. It incorporates the Bayesian distributions of the home and away records of each team as well as attributes. For this model we trained the model including the records and goal differential.
+
 ## Non-Parametric
 
 ### Random Forest
@@ -151,6 +153,8 @@ Support Vector Machines was chosen as a model for predicting both the two-class 
 Random Forest was chosen as one of the models to try as it is known to give good accuracy in many cases and is not too computationally intense. It was used for both Win/Not Win and Win/Draw/Loss prediction.
 
 # Results
+
+The following table contains the mean accuracy and variance for each method when the calculations were run 100 times. SVMs displayed the highest testing accuracy mean for the 2-class with ~64.5%. Random Forests had the highest accuracy for 3-class predictions, with respective accuracies of ~50.9%. We perform a statistical test (the t-test) to examine whether the means are statistically significantly higher than the means of other models.
 
 For Binary Classification
 
@@ -161,7 +165,7 @@ Logistic Regression (with Betting data) | 0.6342500 | 7.258291e-04
 Logistic Regression (without Betting data) | 0.6235833 | 8.791171e-04
 SVM (with Betting data) | 0.5041667 | 0
 SVM (without Betting data) | 0.6447500 | 7.765094e-04
-Random Forest (with Betting data) | 
+Random Forest (with Betting data) | 0.5263779 | 4.532934e-05
 Random Forest (without Betting data) | 0.5325261  | 4.942625e-05
 
 
@@ -173,7 +177,7 @@ Multinomial Regression (with Betting data) | 0.5005000 | 9.110261e-04
 Multinomial Regression (without Betting data) | 0.4871667 | 8.608560e-04
 SVM (with Betting data) | 0.5065833 | 5.768778e-04
 SVM (without Betting data) | 0.5046667 | 6.098639e-04
-Random Forest (with Betting data) | 
+Random Forest (with Betting data) | 0.5277557 | 5.372419e-05
 Random Forest (without Betting data) | 0.5095616 | 5.750444e-05
 Ensemble Method (with Betting data) | 0.4471786 | 3.456211e-05
 Ensemble Method (without Betting data) | 0.4614107 | 3.144835e-05
