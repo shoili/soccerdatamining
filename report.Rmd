@@ -246,7 +246,7 @@ It is interesting to note that parametric models performed better on the binary 
 
 ## Conclusions
 
-Our model outperforms our baseline analysis by a good margin and provides insights into important team attributes. Our model does not beat the professional betting companies odds, but our 3 class model had results comparable to the top voted Kaggle project (using all leagues + betting data) that saw results of 0.5538.
+Our model outperforms our baseline analysis by a good margin and provides insights into important team attributes. Our model does not beat the professional betting companies odds, but it is interesting to note that they underestimate the probability of a draw compared to real life data. Ours does better there. Our 3 class model also had results comparable to the top voted Kaggle project (using all leagues + betting data) that saw results of 0.5538.
 
 Competitive sports are a notoriously difficult area to model. The day to day variation of a players performance cannot be taken into account. The models here also do not take into account player data which could make a difference to our accuracy. In soccer it is also interesting to see not just the line up but also the specific strategy teams use against other teams. The data we have here was the overall team style of play related since it was from gaming data. In reality, teams adjust to the other teams strength and differences and vary the number of forwards or defenders they play on a given day. Substitutions during the match as well as red cards, corners and penalties awarded make a big difference to the match outcome. These are all factors which can be taken into account to advance this project's effort further. 
 
